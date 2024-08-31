@@ -1,35 +1,100 @@
-Chrome Extension for Enhanced URL History Tracking and Search Query Extraction
+🚀 Chrome Extension: Enhanced URL History & Search Query Extraction
 
-Overview:
-Developed a Chrome extension that provides advanced management of browsing history by extracting and displaying search queries from URLs. This extension integrates with Chrome's API to store, retrieve, and manage URLs persistently using IndexedDB, offering users a streamlined view of their browsing activities and search queries.
+📋 Table of Contents
+Project Overview
+Features
+Screenshots
+Installation
+Usage
+APIs & Technologies Used
+Contributing
+License
+📖 Project Overview
+Chrome Extension: Enhanced URL History & Search Query Extraction is a lightweight and powerful Chrome extension that allows users to easily track their browsing history with search query extraction. The extension automatically stores URLs visited by the user, displays only the relevant search queries from URLs, and offers a simple interface for managing the history.
 
-Key Features:
+Key Objectives:
 
-Persistent URL Storage: Utilizes IndexedDB to save browsing history across browser sessions, ensuring that URL data is retained even after tabs are closed.
-Search Query Extraction: Extracts and displays search queries from complex URLs (e.g., Google search results) to provide a clearer view of users’ search activities.
-Interactive UI: Implements a user-friendly popup interface that allows users to view their URL history and easily clear it with a single click.
-Data Management: Includes functionality to clear all stored URL history through a dedicated button, with real-time updates reflected in the popup UI.
-Technical Details:
+Provide users with a clean and clear view of their browsing activities.
+Extract and display the search queries from complex URLs.
+Allow users to manage their browsing history directly within the extension.
+🌟 Features
+Persistent URL Storage: Stores URLs persistently using IndexedDB, even across sessions and after tabs are closed.
+Search Query Extraction: Extracts search queries from URLs to simplify and enhance the browsing history.
+User-Friendly Interface: Interactive and clean UI built using Bootstrap.
+History Management: Easily clear the browsing history with the click of a button.
+Real-Time Data: The extension updates in real-time as new URLs are visited, ensuring that users have up-to-date history.
+🖼️ Screenshots
 
-Frontend: Designed and implemented the extension’s popup interface using HTML, CSS, and Bootstrap, ensuring responsiveness and an intuitive user experience.
-Backend: Developed background scripts using JavaScript to handle events, store URLs in IndexedDB, and communicate between the popup and background scripts via Chrome’s messaging API.
-URL Processing: Integrated a URL parsing function to extract and display search queries from URLs, improving the readability and relevance of the displayed history.
-Event Handling: Managed tab updates and removals to dynamically store and update URL history, while ensuring that URLs are not inadvertently deleted when tabs are closed.
-Impact:
 
-Enhanced User Experience: Provided users with a more insightful and manageable view of their browsing history by focusing on search queries and simplifying URL display.
-Improved Data Persistence: Ensured that URL history is retained even after browser sessions, giving users consistent access to their browsing data.
-Streamlined Management: Enabled easy clearing of browsing history, offering users control over their stored data with a simple and effective interface.
-Technologies Used:
 
-JavaScript (ES6): For core logic, event handling, and API interactions.
-HTML/CSS: For designing the popup interface and styling.
-Bootstrap: For responsive design and UI components.
-IndexedDB: For persistent client-side storage of URL history.
-Chrome Extensions API: For managing browser events, tab updates, and messaging between scripts.
-Skills Demonstrated:
+🛠️ Installation
+Clone this repository:
 
-Web extension development and deployment
-Client-side storage and data management
-User interface design and usability
-Integration with browser APIs and event-driven programming
+bash
+Copy code
+git clone https://github.com/yourusername/chrome-extension-url-history.git
+Navigate to the directory:
+
+bash
+Copy code
+cd chrome-extension-url-history
+Install Dependencies (if any):
+
+bash
+Copy code
+npm install
+Load the Extension in Chrome:
+
+Open Chrome and go to chrome://extensions/
+Enable Developer Mode in the top-right corner.
+Click on Load unpacked and select the project folder.
+The extension will now be installed!
+🎯 Usage
+After installing the extension, click on the extension icon in the Chrome toolbar.
+The popup will display a list of URLs with search queries extracted, along with the timestamps of when the URLs were visited.
+Use the Clear History button to remove all stored URLs.
+Visit new sites, perform searches, and watch your history update in real-time!
+📚 APIs & Technologies Used
+Chrome Extensions API
+chrome.tabs API: Used to monitor tab updates and capture URL information.
+chrome.runtime API: Facilitates messaging between the background script and the popup.
+IndexedDB
+Persistent client-side storage for storing and managing the user's browsing history data.
+Bootstrap 5
+Used for styling the UI, ensuring responsiveness and modern design.
+JavaScript (ES6)
+Core logic for the extension, including event handling, URL extraction, and storage management.
+HTML/CSS
+Structuring and styling the popup interface.
+Other Tools & Libraries
+URLSearchParams API: To extract search query parameters from URLs.
+🛠️ Key Functions & Code Highlights
+Background Script
+Handles URL capturing, storage in IndexedDB, and managing messages between the popup and background script.
+
+js
+Copy code
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.status === "complete") {
+    storeUrlIndexedDB(tabId);  // Store URL in IndexedDB on tab update
+  }
+});
+Popup Script
+Displays the extracted URLs and search queries to the user, provides real-time updates, and allows clearing history.
+
+js
+Copy code
+chrome.runtime.sendMessage({ action: "getUrlHistory" }, (response) => {
+  // Display URL history with search query extraction
+});
+💡 Contributing
+Contributions are welcome! To contribute:
+
+Fork the repository
+Create a new branch
+Make your changes
+Submit a pull request
+For major changes, please open an issue first to discuss what you would like to change.
+
+📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
