@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Tab History",
+  "description":"Keep track of current tab history and jump back to the page you want you to be on",
+  "version": "1.0",
+  "action":{
+    "default_popup": "popup/popup.html",
+    "default_icon": "logo.png",
+    "default_popup_width": 500,
+    "default_popup_height": 400
+  },
+  "icons":{
+"16":"images/icon16.png",
+"48":"images/icon48.png",
+"128":"images/icon128.png"
+  },
+  "permissions": ["tabs", "webNavigation", "storage"],
+  "background": {
+    "service_worker": "background.js",
+    "type":"module"
+  }
+}

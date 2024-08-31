@@ -1,0 +1,419 @@
+.wrapper {
+  list-style-type: none; /* Remove default bullets */
+  padding: 0;
+  margin: 0;
+  display: flex;
+}
+
+.side-scroll {
+  width: 100%; /* Full width container */
+  overflow-x: auto; /* Enable horizontal scrolling */
+  overflow-y: hidden; /* Hide vertical overflow */
+  white-space: nowrap; /* Prevent list items from wrapping to the next line */
+  background-color: #f0f0f0; /* Optional: background color */
+  padding: 10px 0;
+}
+.wrapper li{
+     display: inline-block;   /* Ensure list items are inline */
+    margin-right: 20px;      /* Space between items */
+    background-color: #ca4141;  /* Optional: background color for items */
+    padding: 10px 20px;      /* Optional: padding inside items */
+    border-radius: 5px;      /* Optional: rounded corners for items */
+    box-sizing: border-box;
+    white-space: nowrap; 
+}
+
+
+
+
+-------------------------------------------------------
+let urlHistory = {}; // Object to store history per tab
+
+// Function to store the current URL of the active tab
+function storeUrl(tabId) {
+  chrome.tabs.get(tabId, (tab) => {
+    const currentUrl = tab.url;
+    const timestamp = new Date().toISOString(); // Add a timestamp for when the URL was visited
+
+    console.log("Current URL:", currentUrl);
+
+    // Store the URL in the history object
+    if (!urlHistory[tabId]) {
+      urlHistory[tabId] = [];
+    }
+    urlHistory[tabId].push({ url: currentUrl, visitedAt: timestamp });
+
+    // Optionally, store the history in local storage
+    chrome.storage.local.set({ urlHistory: urlHistory });
+  });
+}
+
+// Listen for tab updates and store the URL when a tab finishes loading
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === "complete") {
+    storeUrl(tabId);
+  }
+});
+
+// Clean up history when a tab is closed
+chrome.tabs.onRemoved.addListener((tabId) => {
+  delete urlHistory[tabId];
+  chrome.storage.local.set({ urlHistory: urlHistory });
+});
+
+// Optionally, store the URL of the active tab when the extension's icon is clicked
+chrome.action.onClicked.addListener(() => {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const currentTabId = tabs[0].id;
+    storeUrl(currentTabId);
+  });
+});
+
+const historyList = [];
+const queryy = document.querySelector(".somewhere");
+chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  const currentUrl = tabs[0].url;
+  queryy.innerHTML = currentUrl;
+  historyList.push(currentUrl);
+});
+console.log(historyList);
+
+//_-;-;-;--;-;-;-;-;-;-;-;-;-;-;-;-;-;
+
+// -------create database on the browser
+// Open (or create) a database
+let db;
+const request = indexedDB.open("UrlHistoryDB", 1);
+
+request.onupgradeneeded = function (event) {
+  db = event.target.result;
+  const objectStore = db.createObjectStore("urls", {
+    keyPath: "id",
+    autoIncrement: true,
+  });
+
+  objectStore.createIndex("tabId", "tabId", { unique: false });
+  objectStore.createIndex("url", "url", { unique: false });
+  objectStore.createIndex("visitedAt", "visitedAt", { unique: false });
+};
+
+request.onsuccess = function (event) {
+  db = event.target.result;
+};
+
+// Function to store the current URL of the active tab
+function storeUrlIndexedDB(tabId) {
+  chrome.tabs.get(tabId, (tab) => {
+    const currentUrl = tab.url;
+    const timestamp = new Date().toISOString();
+
+    const transaction = db.transaction(["urls"], "readwrite");
+    const objectStore = transaction.objectStore("urls");
+
+    const request = objectStore.add({
+      tabId,
+      url: currentUrl,
+      visitedAt: timestamp,
+    });
+    request.onsuccess = function () {
+      console.log("URL added to the database:", currentUrl);
+    };
+  });
+}
+
+// Listen for tab updates and store the URL when a tab finishes loading
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === "complete") {
+    storeUrlIndexedDB(tabId);
+  }
+});
+
+// Example of querying data from IndexedDB
+function getHistoryForTab(tabId) {
+  const transaction = db.transaction(["urls"], "readonly");
+  const objectStore = transaction.objectStore("urls");
+  const index = objectStore.index("tabId");
+
+  const request = index.getAll(tabId);
+
+  request.onsuccess = function (event) {
+    console.log("History for tab:", event.target.result);
+  };
+}
+
+// -----------------------------------
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "getUrlHistory") {
+    const transaction = db.transaction(["urls"], "readonly");
+    const objectStore = transaction.objectStore("urls");
+
+    const allRequest = objectStore.getAll();
+    allRequest.onsuccess = function (event) {
+      console.log("URL history retrieved:", event.target.result);
+
+      sendResponse({ data: event.target.result });
+    };
+    allRequest.onerror = function () {
+      console.error("Error retrieving URL history");
+
+      sendResponse({ data: [] });
+    };
+    return true; // Keeps the messaging channel open for async response
+  }
+});
+
+
+------------------------------------------------------
+
+
+let db;
+const request = indexedDB.open("UrlHistoryDB", 1);
+
+request.onupgradeneeded = function (event) {
+  db = event.target.result;
+  const objectStore = db.createObjectStore("urls", {
+    keyPath: "id",
+    autoIncrement: true,
+  });
+
+  objectStore.createIndex("tabId", "tabId", { unique: false });
+  objectStore.createIndex("url", "url", { unique: false });
+  objectStore.createIndex("visitedAt", "visitedAt", { unique: false });
+};
+
+request.onsuccess = function (event) {
+  console.log("IndexedDB initialized successfully.");
+  db = event.target.result;
+};
+
+request.onerror = function (event) {
+  console.error("Error initializing IndexedDB:", event.target.error);
+};
+
+function storeUrlIndexedDB(tabId) {
+  if (!db) return;
+  chrome.tabs.get(tabId, (tab) => {
+    const currentUrl = tab.url;
+    const timestamp = new Date().toISOString();
+
+    const transaction = db.transaction(["urls"], "readwrite");
+    const objectStore = transaction.objectStore("urls");
+
+    const request = objectStore.add({
+      tabId,
+      url: currentUrl,
+      visitedAt: timestamp,
+    });
+
+    request.onsuccess = function () {
+      console.log("URL added to the database:", currentUrl);
+    };
+
+    request.onerror = function () {
+      console.error("Error adding URL to the database:", request.error);
+    };
+  });
+}
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.status === "complete") {
+    storeUrlIndexedDB(tabId);
+  }
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  if (!db) return;
+
+  const transaction = db.transaction(["urls"], "readwrite");
+  const objectStore = transaction.objectStore("urls");
+
+  const index = objectStore.index("tabId");
+  const request = index.openCursor(IDBKeyRange.only(tabId));
+
+  request.onsuccess = function (event) {
+    const cursor = event.target.result;
+    if (cursor) {
+      cursor.delete();
+      cursor.continue();
+    }
+  };
+
+  request.onerror = function () {
+    console.error("Error deleting URL history:", request.error);
+  };
+});
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "getUrlHistory") {
+    if (!db) {
+      sendResponse({ data: [] });
+      return true;
+    }
+
+    const transaction = db.transaction(["urls"], "readonly");
+    const objectStore = transaction.objectStore("urls");
+
+    const allRequest = objectStore.getAll();
+    allRequest.onsuccess = function (event) {
+      console.log("URL history retrieved:", event.target.result);
+      sendResponse({ data: event.target.result });
+    };
+
+    allRequest.onerror = function () {
+      console.error("Error retrieving URL history");
+      sendResponse({ data: [] });
+    };
+
+    return true; // Keeps the messaging channel open for async response
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------
+params query
+
+
+let db;
+const request = indexedDB.open("UrlHistoryDB", 1);
+
+request.onupgradeneeded = function (event) {
+  db = event.target.result;
+  const objectStore = db.createObjectStore("urls", {
+    keyPath: "id",
+    autoIncrement: true,
+  });
+
+  objectStore.createIndex("tabId", "tabId", { unique: false });
+  objectStore.createIndex("url", "url", { unique: false });
+  objectStore.createIndex("visitedAt", "visitedAt", { unique: false });
+};
+
+request.onsuccess = function (event) {
+  console.log("IndexedDB initialized successfully.");
+  db = event.target.result;
+};
+
+request.onerror = function (event) {
+  console.error("Error initializing IndexedDB:", event.target.error);
+};
+
+function storeUrlIndexedDB(tabId) {
+  if (!db) return;
+  chrome.tabs.get(tabId, (tab) => {
+    const currentUrl = tab.url;
+    const timestamp = new Date().toISOString();
+
+    const transaction = db.transaction(["urls"], "readwrite");
+    const objectStore = transaction.objectStore("urls");
+
+    const request = objectStore.add({
+      tabId,
+      url: currentUrl,
+      visitedAt: timestamp,
+    });
+
+    request.onsuccess = function () {
+      console.log("URL added to the database:", currentUrl);
+    };
+
+    request.onerror = function () {
+      console.error("Error adding URL to the database:", request.error);
+    };
+  });
+}
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.status === "complete") {
+    storeUrlIndexedDB(tabId);
+  }
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  if (!db) return;
+
+  const transaction = db.transaction(["urls"], "readwrite");
+  const objectStore = transaction.objectStore("urls");
+
+  const index = objectStore.index("tabId");
+  const request = index.openCursor(IDBKeyRange.only(tabId));
+
+  request.onsuccess = function (event) {
+    const cursor = event.target.result;
+    if (cursor) {
+      // cursor.delete(); to delte the url after close 
+      cursor.continue();
+    }
+  };
+
+  request.onerror = function () {
+    console.error("Error deleting URL history:", request.error);
+  };
+});
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "getUrlHistory") {
+    if (!db) {
+      sendResponse({ data: [] });
+      return true;
+    }
+
+    const transaction = db.transaction(["urls"], "readonly");
+    const objectStore = transaction.objectStore("urls");
+
+    const allRequest = objectStore.getAll();
+    allRequest.onsuccess = function (event) {
+      console.log("URL history retrieved:", event.target.result);
+      sendResponse({ data: event.target.result });
+    };
+
+    allRequest.onerror = function () {
+      console.error("Error retrieving URL history");
+      sendResponse({ data: [] });
+    };
+
+    return true; // Keeps the messaging channel open for async response
+  } 
+  
+  //for deletions of url history
+  else if (request.action === "clearUrlHistory") {
+    if (!db) {
+      sendResponse({ success: false, message: "Database not initialized" });
+      return true;
+    }
+
+    const transaction = db.transaction(["urls"], "readwrite");
+    const objectStore = transaction.objectStore("urls");
+
+    // Clear all data from the object store
+    const clearRequest = objectStore.clear();
+
+    clearRequest.onsuccess = function () {
+      console.log("URL history cleared successfully");
+      sendResponse({ success: true });
+    };
+
+    clearRequest.onerror = function () {
+      console.error("Error clearing URL history");
+      sendResponse({ success: false, message: "Error clearing URL history" });
+    };
+
+    return true; // Keeps the messaging channel open for async response
+  }
+});
