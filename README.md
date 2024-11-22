@@ -27,6 +27,7 @@ Chrome Extension: Enhanced URL History & Search Query Extraction is a lightweigh
 - History Management: Easily clear the browsing history with the click of a button.
 - User-Friendly Interface: Clean and interactive UI built using Bootstrap.
 ## 🖼️Screenshots
+!(images/Screenshot 2024-11-22 173400.png)
 
 
 
