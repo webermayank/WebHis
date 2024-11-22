@@ -7,7 +7,7 @@ Enabling quick catch up to closed tabs by mistake
 ## 📋 Table of Contents
 1. [Project Overview](#project-overview)
 2. [Features](#features)
-3. [Screenshots]([##🖼️Screenshots](https://github.com/webermayank/WebHis/blob/main/README.md#%EF%B8%8Fscreenshots))
+3. [Screenshots](https://github.com/webermayank/WebHis#%EF%B8%8Fscreenshots)
 4. [Installation](#installation)
 5. [Usage](#usage)
 6. [APIs & Technologies Used](#apis--technologies-used)
@@ -27,6 +27,7 @@ Chrome Extension: Enhanced URL History & Search Query Extraction is a lightweigh
 - History Management: Easily clear the browsing history with the click of a button.
 - User-Friendly Interface: Clean and interactive UI built using Bootstrap.
 ## 🖼️Screenshots
+
 
 
 ## Clone the repository:
