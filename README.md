@@ -41,17 +41,7 @@ Chrome Extension: Enhanced URL History & Search Query Extraction is a lightweigh
 git clone https://github.com/yourusername/chrome-extension-url-history.git
 
 ```
-
-## Navigate to the directory:
-
-```bash
-cd chrome-extension-url-history
-```
-
-## Install dependencies:
-```bash
-npm install
-```
+-- go to google chrom e extension settings and select sue local extension
 
 #### Load the Extension in Chrome:
 
